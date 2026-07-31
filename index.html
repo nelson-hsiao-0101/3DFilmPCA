@@ -1,417 +1,312 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="description"
-        content="Photorealistic Human Avatar Generation and Real-Time Pose Editing with Gaussian Splatting">
-  <meta name="keywords" content="Nerfies, D-NeRF, NeRF">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Photorealistic Human Avatar Generation and Real-Time Pose Editing with Gaussian Splatting</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3DFilmPCA — Rigged 3D Gaussian Splatting for SMPL-Driven Action Control</title>
+<meta name="description" content="3DFilmPCA: rigged 3D Gaussian Splatting for real-time pose and shape editing of film-ready human avatars from monocular video.">
+<meta name="keywords" content="3D Gaussian Splatting, SMPL, Pose Editing, Shape Editing, Human Avatar, Virtual Production, VFX">
 
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PYVRSFMDRL');
+</script>
 
-    function gtag() {
-      dataLayer.push(arguments);
-    }
+<link rel="icon" href="./static/images/favicon_new.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FCFCFD; --surface:#FFFFFF; --ink:#14151A; --mute:#5C5F6B; --faint:#8A8D98;
+    --line:#E6E7EB; --line-2:#EFEFF2; --accent:#2743E6; --accent-ink:#1B31C4;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Inter",system-ui,sans-serif;font-size:16.5px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  a{color:var(--accent-ink);text-decoration:none}
+  a:hover{text-decoration:underline;text-underline-offset:2px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 28px}
+  .measure{max-width:70ch}
+  h2.h{font-family:"Archivo",sans-serif;font-weight:600;font-size:clamp(21px,2.7vw,28px);
+    letter-spacing:-.012em;line-height:1.15;margin:0 0 16px}
+  .kicker{font-size:13px;font-weight:600;color:var(--accent);margin:0 0 9px;letter-spacing:.01em}
+  p{margin:0 0 16px} p:last-child{margin-bottom:0}
+  section{padding:56px 0;border-top:1px solid var(--line-2)}
 
-    gtag('js', new Date());
+  /* ---------- Masthead ---------- */
+  header{padding:56px 0 0;text-align:center}
+  .meta-top{display:flex;justify-content:center;flex-wrap:wrap;align-items:baseline;gap:8px 16px;
+    font-size:13px;color:var(--faint);margin-bottom:22px}
+  .meta-top .mod{color:var(--ink);font-weight:600}
+  .meta-top .mod .idx{color:var(--accent)}
+  h1.wordmark{font-family:"Archivo",sans-serif;font-weight:700;
+    font-size:clamp(36px,5.6vw,58px);letter-spacing:-.028em;line-height:1;margin:0 0 16px}
+  .tagline{font-size:clamp(17px,2.1vw,20px);color:var(--ink);max-width:44ch;margin:0 auto 22px;line-height:1.4}
+  .byline{font-size:15px;color:var(--mute);margin:0 0 4px}
+  .byline a{color:var(--ink);font-weight:500}
+  .affil{font-size:13.5px;color:var(--faint)}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px;justify-content:center}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:500;
+    padding:9px 15px;border-radius:8px;border:1px solid var(--line);background:var(--surface);
+    color:var(--ink);transition:border-color .15s ease,background .15s ease,color .15s ease}
+  .btn:hover{text-decoration:none;border-color:var(--ink)}
+  .btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+  .btn.primary:hover{background:#000}
+  .btn svg{width:15px;height:15px;flex:none}
+  header .rule{height:1px;background:var(--line);margin:44px 0 0}
 
-    gtag('config', 'G-PYVRSFMDRL');
-  </script>
+  /* ---------- Media ---------- */
+  figure{margin:0}
+  .media{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#0f0f12;line-height:0}
+  .media video{width:100%;height:auto;display:block}
+  .cap{font-size:13px;color:var(--mute);line-height:1.5;margin-top:11px;max-width:74ch}
+  .cap b{color:var(--ink);font-weight:500}
+  .teaser{padding:44px 0 0;border-top:0}
 
-  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
-        rel="stylesheet">
+  .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+  .gallery .media{border-radius:8px}
+  .gallery video{aspect-ratio:1/1;object-fit:cover;height:100%}
 
-  <link rel="stylesheet" href="./static/css/bulma.min.css">
-  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
-  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
-  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
-  <link rel="stylesheet" href="./static/css/index.css">
-  <link rel="icon" href="./static/images/favicon_new.svg">
+  /* ---------- Edit split ---------- */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .split h3{font-family:"Archivo",sans-serif;font-weight:600;font-size:17px;margin:0 0 7px}
+  .split p{font-size:14.5px;line-height:1.55;color:#33353f;margin:0 0 13px}
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script defer src="./static/js/fontawesome.all.min.js"></script>
-  <script src="./static/js/bulma-carousel.min.js"></script>
-  <script src="./static/js/bulma-slider.min.js"></script>
-  <script src="./static/js/index.js"></script>
+  /* ---------- Feature list ---------- */
+  .features{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+  .features li{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:14px 2px;
+    border-bottom:1px solid var(--line);font-size:14.5px;line-height:1.5;color:#33353f}
+  .features li b{color:var(--ink);font-weight:600;font-family:"Archivo",sans-serif;font-size:14.5px}
+
+  /* ---------- Contributions ---------- */
+  .contrib{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+  .contrib li{display:grid;grid-template-columns:34px 1fr;gap:8px;padding:16px 2px;
+    border-bottom:1px solid var(--line)}
+  .contrib .k{color:var(--accent);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+  .contrib .v{font-size:15.5px;line-height:1.5}
+  .contrib .v b{font-weight:600}
+
+  /* ---------- Related ---------- */
+  .related{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:13.5px;padding:6px 12px;border:1px solid var(--line);border-radius:6px;
+    background:var(--surface);color:var(--ink);transition:border-color .15s ease}
+  .chip:hover{text-decoration:none;border-color:var(--ink)}
+
+  /* ---------- BibTeX ---------- */
+  .bibtex pre{font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.6;
+    background:#F5F5F7;color:#33353f;border:1px solid var(--line);border-radius:8px;
+    padding:18px 20px;overflow-x:auto;margin:0}
+
+  /* ---------- Acknowledgments ---------- */
+  .logos{display:flex;flex-wrap:wrap;align-items:center;gap:26px;margin:0 0 22px}
+  .logos img{height:44px;width:auto}
+  .ack p{font-size:14.5px;color:#3a3c45;margin:0 0 12px;max-width:74ch}
+
+  /* ---------- Footer ---------- */
+  footer{padding:34px 0 56px;border-top:1px solid var(--line)}
+  footer .row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+  footer .links{display:flex;gap:16px}
+  footer a{color:var(--mute);font-size:13.5px}
+  footer .note{font-size:12.5px;color:var(--faint);max-width:46ch;margin:14px 0 0}
+
+  @media (max-width:720px){
+    section{padding:44px 0} header{padding:40px 0 0}
+    .split,.features li{grid-template-columns:1fr}
+    .features li{gap:2px}
+    .meta-top{flex-direction:column;gap:6px}
+  }
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+</style>
 </head>
 <body>
 
-
-<section class="hero">
-  <div class="hero-body">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered">
-        <div class="column has-text-centered">
-          <h1 class="title is-1 publication-title">3DFilmPCA: Photorealistic Human Avatars with Rigged 3D Gaussian Splatting for SMPL-Driven Pre-Composite Action Control</h1>
-          <div class="is-size-5 publication-authors">
-            <span class="author-block">
-              <a href="https://yicheng.tw/">Yi-Cheng Hsiao</a></span>
-          </div>
-
-          <div class="is-size-5 publication-authors">
-            <span class="author-block"><sup>Texas A&M University</span>
-          </div>
-
-          <div class="column has-text-centered">
-            <div class="publication-links">
-              <!-- PDF Link. -->
-              <span class="link-block">
-                <a href="./static/YI-CHENG-PRIMARY-2025.pdf"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fas fa-file-pdf"></i>
-                  </span>
-                  <span>Paper</span>
-                </a>
-              </span>
-              <!-- Video Link. -->
-              <span class="link-block">
-                <a href="./static/YI-CHENG-PRIMARY-2025.pdf"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fab fa-youtube"></i>
-                  </span>
-                  <span>Video</span>
-                </a>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+<!-- ===================== MASTHEAD ===================== -->
+<header>
+  <div class="wrap">
+    <div class="meta-top">
+      <span class="mod"><span class="idx">02</span> · Edit</span>
+      <span>M.S. Thesis · Texas A&amp;M University · 2025</span>
     </div>
-  </div>
-</section>
-  
-<section class="hero teaser">
-  <div class="container is-max-desktop">
-    <div class="hero-body">
-      <video id="teaser" autoplay muted loop playsinline height="100%">
-        <source src="./static/videos/top_new.mp4"
-                type="video/mp4">
-      </video>
-      <h2 class="subtitle has-text-centered">
-        <span class="dnerf">Nerfies</span> turns selfie videos from your phone into
-        free-viewpoint
-        portraits.
-      </h2>
-    </div>
-  </div>
-</section>
-
-
-
-<section class="section">
-  <div class="container is-max-desktop">
-    <!-- Abstract. -->
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">Abstract</h2>
-        <div class="content has-text-justified">
-          <p>
-            This thesis introduces a two-part framework for photorealistic human avatar reconstruction 
-            and real-time pose editing from monocular video.
-          </p>
-          <p>
-            The first module, <span class="dnerf">GSDHuman</span>, employs Gaussian Surfels to reconstruct Dynamic Human avatars within 
-            minutes, offering efficient human avatar reconstruction from single-view inputs. The second, 
-            <span class="dnerf">3DFilmPCA</span>, is a photorealistic avatar system based on rigged 3D Gaussian Splatting, enabling 
-            SMPL-driven Pre-Composite Action control. Users can interactively manipulate SMPL joints and 
-            instantly visualize updates on the associated Gaussian representation.
-          </p>
-          <p>
-            Together, these components form a complete pipeline that accelerates the creation of control- lable, high-fidelity human models. 
-            The proposed methods are tailored for artist-driven workflows in visual effects, digital filmmaking, 
-            and virtual human editing. Unlike conventional techniques that rely on complex geometry fitting or canonical space 
-            learning, our approach achieves rapid and high-quality results using only monocular video.
-          </p>
-        </div>
-      </div>
-    </div>
-    <!--/ Abstract. -->
-
-    <!-- Paper video. -->
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">Video</h2>
-        <div class="publication-video">
-          <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"
-                  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
-      </div>
-    </div>
-    <!--/ Paper video. -->
-  </div>
-</section>
-
-<section class="hero teaser">
-  <div class="container is-max-desktop">
-    <div class="hero-body">
-      <video id="teaser" autoplay muted loop playsinline height="100%">
-        <source src="./static/videos/top_new.mp4"
-                type="video/mp4">
-      </video>
-      <h2 class="subtitle has-text-centered">
-        <span class="dnerf">Nerfies</span> turns selfie videos from your phone into
-        free-viewpoint
-        portraits.
-      </h2>
-    </div>
-  </div>
-</section>
-
-<section class="hero is-light is-small">
-  <div class="hero-body">
-    <div class="container">
-      <div id="results-carousel" class="carousel results-carousel">
-
-        <div class="item item-steve">
-          <video poster="" id="steve" autoplay controls muted loop playsinline>
-            <source src="./static/videos/1_new.mp4" type="video/mp4">
-          </video>
-        </div>
-
-        <div class="item item-chair-tp">
-          <video poster="" id="chair-tp" autoplay controls muted loop playsinline>
-            <source src="./static/videos/chair-tp.mp4" type="video/mp4">
-          </video>
-        </div>
-
-        <div class="item item-shiba">
-          <video poster="" id="shiba" autoplay controls muted loop playsinline>
-            <source src="./static/videos/shiba.mp4" type="video/mp4">
-          </video>
-        </div>
-
-        <div class="item item-fullbody">
-          <video poster="" id="fullbody" autoplay controls muted loop playsinline>
-            <source src="./static/videos/fullbody.mp4" type="video/mp4">
-          </video>
-        </div>
-
-        <div class="item item-blueshirt">
-          <video poster="" id="blueshirt" autoplay controls muted loop playsinline>
-            <source src="./static/videos/blueshirt.mp4" type="video/mp4">
-          </video>
-        </div>
-
-        <div class="item item-mask">
-          <video poster="" id="mask" autoplay controls muted loop playsinline>
-            <source src="./static/videos/mask.mp4" type="video/mp4">
-          </video>
-        </div>
-
-        <div class="item item-coffee">
-          <video poster="" id="coffee" autoplay controls muted loop playsinline>
-            <source src="./static/videos/coffee.mp4" type="video/mp4">
-          </video>
-        </div>
-
-        <div class="item item-toby">
-          <video poster="" id="toby" autoplay controls muted loop playsinline>
-            <source src="./static/videos/toby2.mp4" type="video/mp4">
-          </video>
-        </div>
-
-      </div>
-    </div>
-  </div>
-</section>
-
-
-  
-<section class="section">
-  <div class="container is-max-desktop">
-
-    <div class="columns is-centered">
-
-      <!-- Shape Editting. -->
-      <div class="column">
-        <div class="content">
-          <h2 class="title is-3">Shape Editting</h2>
-          <p>
-            Using <i>nerfies</i> you can create fun visual effects. This Dolly zoom effect
-            would be impossible without nerfies since it would require going through a wall.
-          </p>
-          <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/shape_editting.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-      </div>
-      <!--/ Shape Editting. -->
-
-      <!-- Pose Editting. -->
-      <div class="column">
-        <h2 class="title is-3">Pose Editting</h2>
-        <div class="columns is-centered">
-          <div class="column content">
-            <p>
-              As a byproduct of our method, we can also solve the matting problem by ignoring
-              samples that fall outside of a bounding box during rendering.
-            </p>
-            <video id="matting-video" controls playsinline height="100%">
-              <source src="./static/videos/pose_ditting.mp4"
-                      type="video/mp4">
-            </video>
-          </div>
-
-        </div>
-      </div>
-    </div>
-    <!--/ Pose Editting. -->
-
-    <!-- Animation. -->
-    <div class="columns is-centered">
-      <div class="column is-full-width">
-        <h2 class="title is-3">Animation</h2>
-
-        <!-- Interpolating. -->
-        <h3 class="title is-4">Interpolating states</h3>
-        <div class="content has-text-justified">
-          <p>
-            We can also animate the scene by interpolating the deformation latent codes of two input
-            frames. Use the slider here to linearly interpolate between the left frame and the right
-            frame.
-          </p>
-        </div>
-        <div class="columns is-vcentered interpolation-panel">
-          <div class="column interpolation-video-column">
-            <div id="interpolation-image-wrapper">
-              Loading...
-            </div>
-            <input class="slider is-fullwidth is-large is-info"
-                   id="interpolation-slider"
-                   step="1" min="0" max="100" value="0" type="range">
-          </div>
-          <div class="column is-3 has-text-centered">
-            <img src="./static/images/interpolate_end.jpg"
-                 class="interpolation-image"
-                 alt="Interpolation end reference image."/>
-            <p class="is-bold">End Frame</p>
-          </div>
-        </div>
-        <br/>
-        <!--/ Interpolating. -->
-
-        <!-- Re-rendering. -->
-        <h3 class="title is-4">Re-rendering the input video</h3>
-        <div class="content has-text-justified">
-          <p>
-            Using <span class="dnerf">Nerfies</span>, you can re-render a video from a novel
-            viewpoint such as a stabilized camera by playing back the training deformations.
-          </p>
-        </div>
-        <div class="content has-text-centered">
-          <video id="replay-video"
-                 controls
-                 muted
-                 preload
-                 playsinline
-                 width="75%">
-            <source src="./static/videos/shape_new.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <!--/ Re-rendering. -->
-
-      </div>
-    </div>
-    <!--/ Animation. -->
-
-
-    <!-- Concurrent Work. -->
-    <div class="columns is-centered">
-      <div class="column is-full-width">
-        <h2 class="title is-3">Related Links</h2>
-
-        <div class="content has-text-justified">
-          <p>
-            There's a lot of excellent work that was introduced around the same time as ours.
-          </p>
-          <p>
-            <a href="https://arxiv.org/abs/2104.09125">Progressive Encoding for Neural Optimization</a> introduces an idea similar to our windowed position encoding for coarse-to-fine optimization.
-          </p>
-          <p>
-            <a href="https://www.albertpumarola.com/research/D-NeRF/index.html">D-NeRF</a> and <a href="https://gvv.mpi-inf.mpg.de/projects/nonrigid_nerf/">NR-NeRF</a>
-            both use deformation fields to model non-rigid scenes.
-          </p>
-          <p>
-            Some works model videos with a NeRF by directly modulating the density, such as <a href="https://video-nerf.github.io/">Video-NeRF</a>, <a href="https://www.cs.cornell.edu/~zl548/NSFF/">NSFF</a>, and <a href="https://neural-3d-video.github.io/">DyNeRF</a>
-          </p>
-          <p>
-            There are probably many more by the time you are reading this. Check out <a href="https://dellaert.github.io/NeRF/">Frank Dellart's survey on recent NeRF papers</a>, and <a href="https://github.com/yenchenlin/awesome-NeRF">Yen-Chen Lin's curated list of NeRF papers</a>.
-          </p>
-        </div>
-      </div>
-    </div>
-    <!--/ Concurrent Work. -->
-
-  </div>
-</section>
-
-<section class="section">
-  <div class="container is-max-desktop">
-    <h2 class="title is-4">Acknowledgements and Funding</h2>
-    <div class="columns is-vcentered is-mobile logos-row" style="margin-top: 1rem;">
-      <div class="column is-narrow">
-        <div class="logo-box">
-          <img src="./static/images/TAMU_logo.png" class="logo-img">
-        </div>
-      </div>
-    
-      <div class="column is-narrow">
-        <div class="logo-box">
-          <img src="./static/images/VIZ_logo.png" class="logo-img">
-        </div>
-      </div>
-    
-      <div class="column is-narrow">
-        <div class="logo-box">
-          <img src="./static/images/NSF_logo.png" class="logo-img">
-        </div>
-      </div>
-    </div>
-    <div class="content" style="margin-top: 1rem;">
-      <p>
-        Graduate study was supported by a fellowship from Texas A&amp;M University and research funding from the National Science Foundation.
-      </p>
-    
-      <p>
-        I would like to sincerely thank Xin Li for his guidance, patience, and insightful advice throughout this thesis. I am also grateful to my committee members, 
-        John Keyser and Ann McNamara, for their valuable feedback and support.
-      </p>
-    </div>
-  </div>
-</section>
-
-
-
-<footer class="footer">
-  <div class="container">
-    <div class="content has-text-centered">
-      <a class="icon-link"
-         href="./static/videos/nerfies_paper.pdf">
-        <i class="fas fa-file-pdf"></i>
+    <h1 class="wordmark">3DFilmPCA</h1>
+    <p class="tagline">Rigged 3D Gaussian Splatting for SMPL-driven pre-composite action control — real-time pose and shape editing of film-ready avatars.</p>
+    <p class="byline"><a href="https://yicheng.tw/">Yi-Cheng Hsiao</a></p>
+    <p class="affil">Department of Visualization, Texas A&amp;M University</p>
+    <div class="actions">
+      <a class="btn primary" href="./static/YI-CHENG-PRIMARY-2025.pdf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        Paper
       </a>
-      <a class="icon-link" href="https://github.com/keunhong" class="external-link" disabled>
-        <i class="fab fa-github"></i>
+      <a class="btn" href="https://github.com/nelson-hsiao-0101/3DFilmPCA">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.9a3.4 3.4 0 0 0-.9-2.6c3-.3 6.2-1.5 6.2-6.7A5.2 5.2 0 0 0 20 4.8 4.8 4.8 0 0 0 19.9 1S18.7.6 16 2.5a13.4 13.4 0 0 0-7 0C6.3.6 5.1 1 5.1 1A4.8 4.8 0 0 0 5 4.8 5.2 5.2 0 0 0 3.7 8.4c0 5.2 3.2 6.4 6.2 6.7a3.4 3.4 0 0 0-.9 2.6V22"/></svg>
+        Code
       </a>
+      <a class="btn" href="https://nelson-hsiao-0101.github.io/GSDHuman.github.io/">← GSDHuman (reconstruction)</a>
     </div>
-    <div class="columns is-centered">
-      <div class="column is-8">
-        <div class="content">
-          <p>
-            We thank the authors of <a href="https://nerfies.github.io/">Nerfies</a> that kindly open sourced the template of this website.
-          </p>
-        </div>
+    <div class="rule"></div>
+  </div>
+</header>
+
+<!-- ===================== TEASER ===================== -->
+<section class="teaser">
+  <div class="wrap">
+    <figure class="media">
+      <video autoplay muted loop playsinline><source src="./static/videos/top_new.mp4" type="video/mp4"></video>
+    </figure>
+    <p class="cap"><b>3DFilmPCA</b> rigs 3D Gaussians to SMPL for real-time pose and shape editing of film-ready avatars.</p>
+  </div>
+</section>
+
+<!-- ===================== ABSTRACT ===================== -->
+<section>
+  <div class="wrap measure">
+    <p class="kicker">Abstract</p>
+    <h2 class="h">Direct the avatar, in real time</h2>
+    <p>Once a photorealistic avatar exists, an artist needs to direct it. 3DFilmPCA is a rigged 3D Gaussian Splatting system for SMPL-driven, pre-composite action control from monocular video.</p>
+    <p>Each 3D Gaussian is bound to a triangle on the SMPL mesh and transformed through a local-to-global parameterization, so posing the skeleton moves the splats coherently across frames. A binding-inheritance density strategy adds detail where it's needed, and an area-aware scaling rule keeps splats proportionate as body shape changes. A custom interactive viewer exposes per-joint rotations and PCA shape parameters with immediate visual feedback.</p>
+    <p>The system supports real-time pose and shape editing, motion transfer onto cinematic sequences, and free-viewpoint rendering for compositing. 3DFilmPCA is Module&nbsp;2; the companion reconstruction method is <a href="https://nelson-hsiao-0101.github.io/GSDHuman.github.io/">GSDHuman</a>.</p>
+  </div>
+</section>
+
+<!-- ===================== RESULTS ===================== -->
+<section>
+  <div class="wrap">
+    <p class="kicker">Results</p>
+    <h2 class="h">Avatars in motion</h2>
+    <div class="gallery">
+      <figure class="media"><video autoplay controls muted loop playsinline><source src="./static/videos/1_new.mp4" type="video/mp4"></video></figure>
+      <figure class="media"><video autoplay controls muted loop playsinline><source src="./static/videos/fullbody.mp4" type="video/mp4"></video></figure>
+      <figure class="media"><video autoplay controls muted loop playsinline><source src="./static/videos/blueshirt.mp4" type="video/mp4"></video></figure>
+      <figure class="media"><video autoplay controls muted loop playsinline><source src="./static/videos/mask.mp4" type="video/mp4"></video></figure>
+    </div>
+    <!-- TODO: add motion-transfer / film-clip results here (dropped Nerfies template placeholders: chair-tp / shiba / coffee / toby2). -->
+  </div>
+</section>
+
+<!-- ===================== EDITING ===================== -->
+<section>
+  <div class="wrap">
+    <p class="kicker">Editing</p>
+    <h2 class="h">Shape &amp; pose, live</h2>
+    <div class="split">
+      <div>
+        <h3>Shape editing</h3>
+        <p>PCA-based SMPL shape parameters are exposed as sliders — height, chest, waist, and more. Deformations reflect on the rigged Gaussian avatar in real time, retargeting the body to different builds while preserving appearance.</p>
+        <figure class="media"><video autoplay controls muted loop playsinline><source src="./static/videos/shape_editting.mp4" type="video/mp4"></video></figure>
+      </div>
+      <div>
+        <h3>Pose editing</h3>
+        <p>Joint-level control over the SMPL kinematic tree: select a joint and adjust its X/Y/Z rotation. The change updates the SMPL pose vector and drives the bound Gaussians via linear blend skinning, with immediate feedback.</p>
+        <figure class="media"><video controls muted loop playsinline><source src="./static/videos/pose_ditting.mp4" type="video/mp4"></video></figure>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ===================== VIEWER ===================== -->
+<section>
+  <div class="wrap">
+    <p class="kicker">Interactive viewer</p>
+    <h2 class="h">One panel, full control</h2>
+    <p class="measure">A custom real-time viewer ties the system together — reporting live metrics and Gaussian count, toggling splat and mesh views, and driving every edit from a single interface.</p>
+    <ul class="features">
+      <li><b>Rendering</b><span>Scale modifier, vertical field of view, and splat/mesh visibility toggles.</span></li>
+      <li><b>Body pose</b><span>Per-joint Euler rotations across the full SMPL kinematic tree.</span></li>
+      <li><b>Body shape</b><span>PCA shape parameters — height, chest, waist — applied live.</span></li>
+      <li><b>Time &amp; scale</b><span>Step through frames to inspect temporal and spatial coherence.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== MOTION TRANSFER ===================== -->
+<section>
+  <div class="wrap">
+    <p class="kicker">Compositing</p>
+    <h2 class="h">Motion transfer &amp; free-viewpoint</h2>
+    <p class="measure">SMPL poses estimated from film clips are transferred onto the trained avatar; foreground segmentation and inpainting recover a clean background for compositing. The rigged Gaussians render from arbitrary angles with consistent appearance.</p>
+    <figure class="media" style="margin-top:24px"><video controls muted preload playsinline><source src="./static/videos/shape_new.mp4" type="video/mp4"></video></figure>
+  </div>
+</section>
+
+<!-- ===================== CONTRIBUTIONS ===================== -->
+<section>
+  <div class="wrap measure">
+    <p class="kicker">Contributions</p>
+    <h2 class="h">What's new</h2>
+    <ul class="contrib">
+      <li><span class="k">C1</span><span class="v"><b>Shape and pose, in real time.</b> The first system to interactively edit both the body shape and the pose of a Gaussian human avatar with live feedback.</span></li>
+      <li><span class="k">C2</span><span class="v"><b>A custom editing viewer.</b> A responsive interface for inspecting and manipulating avatar attributes — joints, shape, and rendering — as you work.</span></li>
+      <li><span class="k">C3</span><span class="v"><b>Cinematic robustness.</b> Demonstrated across diverse film sequences and motion styles via SMPL pose transfer and background inpainting.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== RELATED ===================== -->
+<section>
+  <div class="wrap">
+    <p class="kicker">Related</p>
+    <h2 class="h">Builds on</h2>
+    <div class="related">
+      <a class="chip" href="https://arxiv.org/abs/2312.02069">GaussianAvatars</a>
+      <a class="chip" href="https://arxiv.org/abs/2311.17910">HUGS</a>
+      <a class="chip" href="https://arxiv.org/abs/2403.05087">SplattingAvatar</a>
+      <a class="chip" href="https://arxiv.org/abs/2312.02973">GauHuman</a>
+      <a class="chip" href="https://arxiv.org/abs/2308.04079">3D Gaussian Splatting</a>
+      <a class="chip" href="https://smpl.is.tue.mpg.de/">SMPL</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== BIBTEX ===================== -->
+<section class="bibtex">
+  <div class="wrap measure">
+    <p class="kicker">Citation</p>
+    <h2 class="h">BibTeX</h2>
+    <pre>@mastersthesis{hsiao2025avatars,
+  title   = {Photorealistic Human Avatar Generation and Real-Time
+             Pose Editing with Gaussian Splatting},
+  author  = {Hsiao, Yi-Cheng},
+  school  = {Texas A\&M University},
+  year    = {2025},
+  month   = aug,
+  type    = {Master's thesis},
+  url     = {https://nelson-hsiao-0101.github.io/3DFilmPCA/static/YI-CHENG-PRIMARY-2025.pdf}
+}</pre>
+  </div>
+</section>
+
+<!-- ===================== ACKNOWLEDGMENTS ===================== -->
+<section class="ack">
+  <div class="wrap">
+    <p class="kicker">Acknowledgments &amp; funding</p>
+    <div class="logos">
+      <img src="./static/images/TAMU_logo.png" alt="Texas A&M University">
+      <img src="./static/images/VIZ_logo.png" alt="Department of Visualization">
+      <img src="./static/images/NSF_logo.png" alt="National Science Foundation">
+    </div>
+    <p>Graduate study was supported by a fellowship from Texas A&amp;M University and research funding from the National Science Foundation.</p>
+    <p>I sincerely thank Xin Li for his guidance and insight throughout this thesis, and my committee members John Keyser and Ann McNamara for their valuable feedback.</p>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <span style="font-size:13.5px;color:var(--mute)">3DFilmPCA · Yi-Cheng Hsiao · 2025</span>
+      <span class="links">
+        <a href="./static/YI-CHENG-PRIMARY-2025.pdf">Paper</a>
+        <a href="https://github.com/nelson-hsiao-0101/3DFilmPCA">Code</a>
+        <a href="https://nelson-hsiao-0101.github.io/GSDHuman.github.io/">GSDHuman</a>
+      </span>
+    </div>
+    <p class="note">Website template adapted from <a href="https://nerfies.github.io/">Nerfies</a>, kindly open-sourced by its authors.</p>
   </div>
 </footer>
 
