@@ -65,7 +65,7 @@
   /* ---------- Media ---------- */
   figure{margin:0}
   .media{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#0f0f12;line-height:0}
-  .media video{width:100%;height:auto;display:block}
+  .media video,.media img{width:100%;height:auto;display:block}
   .cap{font-size:13px;color:var(--mute);line-height:1.5;margin-top:11px;max-width:74ch}
   .cap b{color:var(--ink);font-weight:500}
   .teaser{padding:44px 0 0;border-top:0}
@@ -78,6 +78,12 @@
   .split{display:grid;grid-template-columns:1fr 1fr;gap:22px}
   .split h3{font-family:"Archivo",sans-serif;font-weight:600;font-size:17px;margin:0 0 7px}
   .split p{font-size:14.5px;line-height:1.55;color:#33353f;margin:0 0 13px}
+
+  /* ---------- Before/after compare ---------- */
+  .cmp-title{font-family:"Archivo",sans-serif;font-weight:600;font-size:17px;margin:30px 0 0}
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:14px}
+  .compare .tag{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:11px;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
 
   /* ---------- Feature list ---------- */
   .features{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
@@ -118,7 +124,7 @@
 
   @media (max-width:720px){
     section{padding:44px 0} header{padding:40px 0 0}
-    .split,.features li{grid-template-columns:1fr}
+    .split,.compare,.features li{grid-template-columns:1fr}
     .features li{gap:2px}
     .meta-top{flex-direction:column;gap:6px}
   }
@@ -170,6 +176,19 @@
   </div>
 </section>
 
+<!-- ===================== FRAMEWORK ===================== -->
+<section>
+  <div class="wrap">
+    <p class="kicker">Framework</p>
+    <h2 class="h">System overview</h2>
+    <p class="measure">Each 3D Gaussian is bound to a SMPL triangle and transformed local-to-global, so pose and shape edits propagate to the splats coherently. Binding inheritance and area-aware scaling refine density; segmentation and inpainting prepare the result for compositing.</p>
+    <figure class="media" style="margin-top:22px">
+      <img src="./static/images/framework.png" alt="3DFilmPCA framework diagram">
+    </figure>
+    <p class="cap"><b>Figure.</b> 3DFilmPCA pipeline — binding-aware parameterization, adaptive density control, and pose/shape editing driving the rigged Gaussians. <!-- Add the figure as static/images/framework.png (export Fig. 3.1 from the thesis). --></p>
+  </div>
+</section>
+
 <!-- ===================== RESULTS ===================== -->
 <section>
   <div class="wrap">
@@ -181,7 +200,6 @@
       <figure class="media"><video autoplay controls muted loop playsinline><source src="./static/videos/fat_2_small.mp4" type="video/mp4"></video></figure>
       <figure class="media"><video autoplay controls muted loop playsinline><source src="./static/videos/fat_3_small.mp4" type="video/mp4"></video></figure>
     </div>
-    <!-- TODO: add motion-transfer / film-clip results here (dropped Nerfies template placeholders: chair-tp / shiba / coffee / toby2). -->
   </div>
 </section>
 
@@ -202,6 +220,21 @@
         <figure class="media"><video controls muted loop playsinline><source src="./static/videos/pose_editting.mp4" type="video/mp4"></video></figure>
       </div>
     </div>
+
+    <h3 class="cmp-title">Pose editing — before / after</h3>
+    <div class="compare">
+      <figure>
+        <span class="tag">Before</span>
+        <div class="media"><video autoplay muted loop playsinline><source src="./static/videos/pose_before.mp4" type="video/mp4"></video></div>
+        <p class="cap">Original pose from the captured sequence.</p>
+      </figure>
+      <figure>
+        <span class="tag">After</span>
+        <div class="media"><video autoplay muted loop playsinline><source src="./static/videos/pose_after.mp4" type="video/mp4"></video></div>
+        <p class="cap">Edited pose — joint rotations applied via the viewer.</p>
+      </figure>
+    </div>
+    <!-- Add the two clips as static/videos/pose_before.mp4 and pose_after.mp4 (or point the src at whichever pair you rendered). -->
   </div>
 </section>
 
